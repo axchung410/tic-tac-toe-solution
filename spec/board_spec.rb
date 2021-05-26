@@ -48,24 +48,84 @@ module TicTacToe
       end
     end
 
+    TestCell = Struct.new(:value)
+    let(:x_cell) { TestCell.new("X") }
+    let(:y_cell) { TestCell.new("Y") }
+    let(:empty) { TestCell.new }
+    
     context "#game_over" do
       it "returns :winner if winner? is true" do
         board = Board.new
-        board.stubs(:winner?) {true}
+        allow(board).to receive(:winner?).and_return(true)
+        #board.stub(:winner?) {true} # would work with RSpec 2.x
         expect(board.game_over).to eq :winner
       end
 
-      it "returns :draw if draw? is true" do
+      it "returns :draw if winner? is false and draw? is true" do
         board = Board.new
-        board.stubs(:draw?) {true}
+        allow(board).to receive(:winner?).and_return(false)
+        allow(board).to receive(:draw?).and_return(true)
+        #board.stub(:draw?) {true} # this would also work with RSpec 2.x
         expect(board.game_over).to eq :draw
       end
 
       it "returns false if winner? is false and draw? is false" do
         board = Board.new
-        board.stubs(:winner?) {false}
-        board.stubs(:draw?) {false}
-        expect(board.game_over).to be_false
+        allow(board).to receive(:winner?).and_return(false)
+        allow(board).to receive(:draw?).and_return(false)
+        #board.stub(:winner?) {false} # these would work work RSpec 2.x
+        #board.stub(:draw?) {false}
+        expect(board.game_over).to be false
+      end
+
+      it "returns :winner when row has objects with value that are all the same" do
+        grid = [
+          [x_cell, x_cell, x_cell],
+          [y_cell, x_cell, y_cell],
+          [x_cell, y_cell, empty]
+        ]
+        board = Board.new(grid: grid)
+        expect(board.game_over).to eq :winner
+      end
+
+      it "returns :winner when column has objects with value that are all the same" do
+        grid = [
+          [x_cell, y_cell, x_cell],
+          [y_cell, y_cell, x_cell],
+          [empty, y_cell, y_cell]
+        ]
+        board = Board.new(grid: grid)
+        expect(board.game_over).to eq :winner
+      end
+
+      it "returns :winner when diagonals has objects with value that are all the same" do
+        grid = [
+          [x_cell, y_cell, empty],
+          [y_cell, x_cell, y_cell],
+          [empty, y_cell, x_cell]
+        ]
+        board = Board.new(grid: grid)
+        expect(board.game_over).to eq :winner
+      end
+
+      it "returns :draw when entire board has taken with no winner" do
+        grid = [
+          [x_cell, y_cell, x_cell],
+          [y_cell, x_cell, x_cell],
+          [y_cell, x_cell, y_cell]
+        ]
+        board = Board.new(grid: grid)
+        expect(board.game_over).to eq :draw
+      end
+
+      it "returns false when no :draw or :winner" do
+        grid = [
+          [x_cell, y_cell, empty],
+          [y_cell, x_cell, empty],
+          [x_cell, x_cell, y_cell]
+        ]
+        board = Board.new(grid: grid)
+        expect(board.game_over).to be_falsey
       end
     end
 
